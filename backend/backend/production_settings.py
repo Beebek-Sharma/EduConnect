@@ -1,5 +1,7 @@
 """Production settings for Cloudflare Workers + PostgreSQL."""
 
+import os
+
 DEBUG = False
 
 ALLOWED_HOSTS = [
