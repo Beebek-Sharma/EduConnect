@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "educonnect-api",
+  "main": "worker.py",
+  "compatibility_date": "2026-09-24",
+  "compatibility_flags": [
+    "python_workers"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "educonnect-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "./cloudflare_migrations"
+    }
+  ],
+  "vars": {
+    "CLOUDFLARE_D1": "1",
+    "DJANGO_ENV": "production",
+    "DJANGO_DEBUG": "False"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
