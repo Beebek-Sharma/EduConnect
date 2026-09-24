@@ -62,17 +62,32 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = "backend.wsgi.application"
 
-# Local development keeps the existing SQLite database. Cloudflare Workers
-# switches to the SQLite-compatible D1 backend through django-cf.
-if os.environ.get("CLOUDFLARE_D1") == "1":
+# PostgreSQL is used in production. Locally, DATABASE_URL can also point to
+# PostgreSQL; otherwise development continues to use the existing SQLite DB.
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    try:
+        from workers import env
+        DATABASE_URL = env.HYPERDRIVE.connection_string
+    except (ImportError, AttributeError):
+        DATABASE_URL = None
+
+if DATABASE_URL:
+    import dj_database_url
     DATABASES = {
-        "default": {
-            "ENGINE": "django_cf.db.backends.d1",
-            "CLOUDFLARE_BINDING": "DB",
-        }
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=0,
+            conn_health_checks=True,
+        )
     }
 else:
-    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
