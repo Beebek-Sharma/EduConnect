@@ -1,11 +1,10 @@
 [project]
 name = "educonnect-django-worker"
 version = "0.1.0"
-description = "EduConnect Django REST API deployed to Cloudflare Workers with D1"
+description = "EduConnect Django REST API deployed to Cloudflare Workers with PostgreSQL"
 requires-python = ">=3.13"
 dependencies = [
     "Django==5.2.7",
-    "django-cf>=0.2.14",
     "djangorestframework==3.16.1",
     "djangorestframework-simplejwt==5.5.1",
     "django-cors-headers==4.9.0",
@@ -34,6 +33,8 @@ dependencies = [
     "grpcio-status==1.71.2",
     "proto-plus==1.26.1",
     "protobuf==5.29.5",
+    "psycopg[binary]==3.2.10",
+    "dj-database-url==2.3.1",
 ]
 
 [dependency-groups]
