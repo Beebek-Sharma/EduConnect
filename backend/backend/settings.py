@@ -62,7 +62,17 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = "backend.wsgi.application"
 
-DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+# Local development keeps the existing SQLite database. Cloudflare Workers
+# switches to the SQLite-compatible D1 backend through django-cf.
+if os.environ.get("CLOUDFLARE_D1") == "1":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django_cf.db.backends.d1",
+            "CLOUDFLARE_BINDING": "DB",
+        }
+    }
+else:
+    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
