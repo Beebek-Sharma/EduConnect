@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.log
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Django/local data
+**/db.sqlite3
+**/media/
+
+# Python environments
+.venv/
+venv/
+env/
+
+# Frontend
+node_modules/
+dist/
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
