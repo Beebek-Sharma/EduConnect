@@ -1,15 +1,11 @@
 import os
 
-from django_cf import DjangoCF
-from workers import WorkerEntrypoint
+from django.core.wsgi import get_wsgi_application
+from workers import wsgi
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 
+application = get_wsgi_application()
 
-class Default(DjangoCF, WorkerEntrypoint):
-    """Cloudflare Worker entry point for the EduConnect Django API."""
-
-    def get_app(self):
-        from backend.wsgi import application
-
-        return application
+# Standard Django WSGI entry point for Cloudflare Python Workers.
+Default = wsgi.entrypoint(application)
