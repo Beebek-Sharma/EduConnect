@@ -1,43 +1,37 @@
-"""
-Production settings for Django project.
-Import this file in settings.py for production environments.
-"""
+"""Production settings for Cloudflare Workers + PostgreSQL."""
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-# Replace with your actual domain(s)
-ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
+    if host.strip()
+]
 
-# CORS settings for production
 CORS_ALLOWED_ORIGINS = [
-    "https://yourdomain.com",
-    "https://www.yourdomain.com",
+    origin.strip()
+    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://yourdomain.com",
-    "https://www.yourdomain.com",
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
 ]
 
-# Cookie security settings
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = False  # Must be False for frontend to read CSRF token
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_DOMAIN = 'yourdomain.com'  # No leading dot if not including subdomains
-
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_DOMAIN = 'yourdomain.com'
+SESSION_COOKIE_SAMESITE = "Lax"
 
-# JWT Cookie settings
-JWT_AUTH_SECURE = True  # For HTTPS only
-JWT_AUTH_SAMESITE = 'Lax'  # Lax allows cookies to be sent with top-level navigation
-JWT_AUTH_DOMAIN = 'yourdomain.com'  # Use '.yourdomain.com' to include subdomains
+JWT_AUTH_SECURE = True
+JWT_AUTH_SAMESITE = "Lax"
+JWT_AUTH_DOMAIN = None
 
-# Security middleware settings
-SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_SSL_REDIRECT = True
