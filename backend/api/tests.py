@@ -4,30 +4,35 @@ from django.urls import reverse
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
 from unittest.mock import patch, MagicMock
-from .authentication import ClerkJWTAuthentication
-import jwt
+from .authentication import JWTCookieAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
 import datetime
 import uuid
 import json
 
 User = get_user_model()
 
-class ClerkJWTAuthenticationTests(TestCase):
+class JWTCookieAuthenticationTests(TestCase):
 	def setUp(self):
 		self.factory = APIRequestFactory()
-		self.auth = ClerkJWTAuthentication()
+		self.auth = JWTCookieAuthentication()
 
-	def test_authenticate_with_valid_token(self):
-		token = 'header.payload.signature'
-		# Patch get_user_from_token to simulate successful auth
+	def test_authenticate_with_valid_token_in_cookie(self):
 		fake_user = User.objects.create_user(username='user_123', email='u@example.com')
-		with patch.object(ClerkJWTAuthentication, 'get_user_from_token', return_value=fake_user):
-			request = self.factory.get('/api/me/', HTTP_AUTHORIZATION=f'Bearer {token}')
-			user, returned_token = self.auth.authenticate(request)
-			self.assertEqual(user.username, 'user_123')
-			self.assertEqual(returned_token, token)
+		token = str(RefreshToken.for_user(fake_user).access_token)
+		request = self.factory.get('/api/me/')
+		request.COOKIES['access_token'] = token
+		user, returned_token = self.auth.authenticate(request)
+		self.assertEqual(user.username, 'user_123')
 
-	def test_authenticate_no_header(self):
+	def test_authenticate_with_valid_token_in_header(self):
+		fake_user = User.objects.create_user(username='user_456', email='u456@example.com')
+		token = str(RefreshToken.for_user(fake_user).access_token)
+		request = self.factory.get('/api/me/', HTTP_AUTHORIZATION=f'Bearer {token}')
+		user, returned_token = self.auth.authenticate(request)
+		self.assertEqual(user.username, 'user_456')
+
+	def test_authenticate_no_credentials(self):
 		request = self.factory.get('/api/me/')
 		result = self.auth.authenticate(request)
 		self.assertIsNone(result)

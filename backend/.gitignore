@@ -21,6 +21,8 @@ instance/
 .webassets-cache
 
 # Static and build files
+staticfiles/
+media/
 build/
 dist/
 

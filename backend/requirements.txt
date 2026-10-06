@@ -13,7 +13,7 @@ tzdata==2025.2
 
 # PostgreSQL
 psycopg[binary]==3.2.10
-dj-database-url==2.3.1
+dj-database-url>=2.3.0
 
 # Auth & JWT
 PyJWT==2.10.1
@@ -31,6 +31,7 @@ groq==0.32.0
 openai==2.2.0
 
 # Utilities
+gunicorn>=23.0.0
 requests==2.32.5
 pillow==11.3.0
 tqdm==4.67.1

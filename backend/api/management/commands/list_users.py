@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from api.models import UserProfile
+
+User = get_user_model()
 
 
 class Command(BaseCommand):
@@ -25,9 +27,8 @@ class Command(BaseCommand):
             self.stdout.write(f'Username: {user.username}')
             self.stdout.write(f'  Email: {user.email}')
             self.stdout.write(f'  Name: {user.first_name} {user.last_name}')
+            self.stdout.write(f'  Role: {getattr(user, "role", "student")}')
             self.stdout.write(f'  Is superuser: {user.is_superuser}')
             self.stdout.write(f'  Is staff: {user.is_staff}')
             self.stdout.write(f'  Has profile: {profile is not None}')
-            if profile:
-                self.stdout.write(f'  Profile role: {profile.role}')
             self.stdout.write('')

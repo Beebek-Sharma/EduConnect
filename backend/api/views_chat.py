@@ -10,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from rest_framework.response import Response
 from rest_framework import status
@@ -32,8 +32,7 @@ class AuthenticatedChatMessageThrottle(UserRateThrottle):
 
 
 @api_view(['POST'])
-@throttle_classes([AuthenticatedChatMessageThrottle])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def chat_message(request):
     """
     Handle POST requests for chat messages.
@@ -118,19 +117,22 @@ def chat_message(request):
 
 
 @api_view(['GET'])
-@throttle_classes([AuthenticatedChatMessageThrottle])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def chat_history(request, session_id):
     """
     Retrieve chat history for a given session ID.
-    Only the owner can access.
     """
     try:
-        session = ChatSession.objects.get(session_id=session_id, user=request.user)
+        session = ChatSession.objects.get(session_id=session_id)
+        if session.user and request.user != session.user and not getattr(request.user, 'is_staff', False):
+            return Response(
+                {"error": "You don't have permission to access this chat history."},
+                status=status.HTTP_403_FORBIDDEN
+            )
     except ObjectDoesNotExist:
         return Response(
-            {"error": "You don't have permission to access this chat history or it does not exist."},
-            status=status.HTTP_403_FORBIDDEN
+            {"error": "Chat session not found"},
+            status=status.HTTP_404_NOT_FOUND
         )
     messages = list(session.messages.values('role', 'content', 'timestamp'))
     return Response({
@@ -141,14 +143,18 @@ def chat_history(request, session_id):
     })
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def chat_clear(request, session_id):
     """
     Clear or delete a chat session.
-    Only the owner can delete.
     """
     try:
-        session = ChatSession.objects.get(session_id=session_id, user=request.user)
+        session = ChatSession.objects.get(session_id=session_id)
+        if session.user and request.user != session.user and not getattr(request.user, 'is_staff', False):
+            return Response(
+                {"error": "You don't have permission to clear this chat session."},
+                status=status.HTTP_403_FORBIDDEN
+            )
         session.messages.all().delete()
         return Response({
             'status': 'success',
@@ -156,8 +162,8 @@ def chat_clear(request, session_id):
         })
     except ObjectDoesNotExist:
         return Response(
-            {"error": "You don't have permission to clear this chat session or it does not exist."},
-            status=status.HTTP_403_FORBIDDEN
+            {"error": "Chat session not found"},
+            status=status.HTTP_404_NOT_FOUND
         )
     except Exception as e:
         print(f"Error in chat_clear view: {str(e)}")
@@ -168,7 +174,7 @@ def chat_clear(request, session_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def chat_summary(request):
     """
     Generate a summary of the chat conversation.

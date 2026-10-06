@@ -6,10 +6,14 @@ This script loads course data from JSON files into the Django database
 import json
 import os
 import sys
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 import django
 
 # Setup Django environment
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = script_dir if os.path.exists(os.path.join(script_dir, 'backend')) else os.path.dirname(script_dir)
+sys.path.insert(0, os.path.join(project_root, 'backend'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
 
@@ -97,9 +101,6 @@ def main():
     print("=" * 50)
     print()
     
-    # Get the root directory
-    root_dir = os.path.dirname(os.path.abspath(__file__))
-    
     # JSON files to process
     json_files = [
         'mit.json',
@@ -110,7 +111,15 @@ def main():
     ]
     
     # Ask if user wants to clear existing courses
-    clear = input('🗑️  Clear existing courses before loading? (y/N): ').lower() == 'y'
+    try:
+        if '--clear' in sys.argv:
+            clear = True
+        elif '--no-clear' in sys.argv:
+            clear = False
+        else:
+            clear = input('🗑️  Clear existing courses before loading? (y/N): ').lower() == 'y'
+    except (EOFError, Exception):
+        clear = False
     
     if clear:
         print('\n🗑️  Clearing existing courses...')
@@ -122,7 +131,9 @@ def main():
     
     # Process each JSON file
     for json_file in json_files:
-        file_path = os.path.join(root_dir, json_file)
+        file_path = os.path.join(project_root, json_file)
+        if not os.path.exists(file_path):
+            file_path = os.path.join(script_dir, json_file)
         created, updated = load_courses_from_json(file_path, clear)
         total_created += created
         total_updated += updated

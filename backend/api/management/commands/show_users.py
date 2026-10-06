@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from api.models import UserProfile
+
+User = get_user_model()
 
 
 class Command(BaseCommand):
@@ -19,19 +21,15 @@ class Command(BaseCommand):
         self.stdout.write('-' * 100)
         
         for user in users:
-            # Get or create profile
-            profile, created = UserProfile.objects.get_or_create(
-                user=user,
-                defaults={'role': 'admin' if user.is_superuser else 'student'}
-            )
+            UserProfile.objects.get_or_create(user=user)
             
             username = user.username[:38] + '..' if len(user.username) > 40 else user.username
             email = user.email[:33] + '..' if len(user.email) > 35 else user.email
-            role = profile.role
+            role = getattr(user, 'role', 'student')
             is_super = 'Yes' if user.is_superuser else 'No'
             
             # Color code the output
-            if role == 'admin':
+            if role in ['admin', 'superuser_admin']:
                 self.stdout.write(self.style.SUCCESS(
                     f'{username:<40} {email:<35} {role:<10} {is_super:<10}'
                 ))

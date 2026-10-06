@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from api.models import UserProfile
+
+User = get_user_model()
 
 
 class Command(BaseCommand):
@@ -14,16 +16,15 @@ class Command(BaseCommand):
         
         try:
             user = User.objects.get(username=username)
-            profile, created = UserProfile.objects.get_or_create(user=user)
-            profile.role = 'admin'
-            profile.save()
-            
+            user.role = 'admin'
             user.is_superuser = True
             user.is_staff = True
             user.save()
             
+            UserProfile.objects.get_or_create(user=user)
+            
             self.stdout.write(self.style.SUCCESS(f'Successfully made {username} an admin'))
-            self.stdout.write(f'Profile role: {profile.role}')
+            self.stdout.write(f'User role: {user.role}')
             self.stdout.write(f'Is superuser: {user.is_superuser}')
             self.stdout.write(f'Is staff: {user.is_staff}')
             
