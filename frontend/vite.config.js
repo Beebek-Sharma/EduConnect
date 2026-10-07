@@ -31,6 +31,10 @@ export default defineConfig({
       }
     }
   },
+  preview: {
+    host: '0.0.0.0',
+    allowedHosts: ['educonnect-app.up.railway.app']
+  },
   build: {
     // Configure how assets are built
     rollupOptions: {
