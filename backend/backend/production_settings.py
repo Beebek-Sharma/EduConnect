@@ -1,4 +1,4 @@
-"""Production settings for Cloudflare Workers + PostgreSQL."""
+"""Production settings for Railway + PostgreSQL."""
 
 import os
 
@@ -9,6 +9,15 @@ ALLOWED_HOSTS = [
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
     if host.strip()
 ]
+
+# Railway terminates TLS at its proxy and forwards the original protocol.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# If Railway provides its public domain, allow it automatically in addition
+# to the explicitly configured DJANGO_ALLOWED_HOSTS values.
+RAILWAY_PUBLIC_DOMAIN = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+if RAILWAY_PUBLIC_DOMAIN and RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
