@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const railwayPublicDomain =
+  process.env.RAILWAY_PUBLIC_DOMAIN || 'educonnect-app-production.up.railway.app';
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -33,7 +36,7 @@ export default defineConfig({
   },
   preview: {
     host: '0.0.0.0',
-    allowedHosts: ['educonnect-app.up.railway.app']
+    allowedHosts: [railwayPublicDomain]
   },
   build: {
     // Configure how assets are built
